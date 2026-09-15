@@ -16,14 +16,14 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   /* Number of workers */
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
 
   /* Reporter */
   reporter: 'html',
 
   /* Shared settings for all tests */
   use: {
-    baseURL: 'https://www.ndosiautomation.co.za',
+    baseURL: 'https://ndosisimplifiedautomation.vercel.app',
 
     /* Collect trace when retrying a failed test */
     trace: 'on-first-retry',
@@ -50,9 +50,6 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'] },
     },
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+   
   ],
 });

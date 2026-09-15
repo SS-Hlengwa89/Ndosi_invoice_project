@@ -1,14 +1,53 @@
 import { test, expect } from '@playwright/test';
 
+const API_BASE_URL = 'https://www.ndosiautomation.co.za';
+
+async function getAuthToken(request: any): Promise<string> {
+
+  const response = await request.post(
+    `${API_BASE_URL}/APIDEV/login`,
+    {
+      data: {
+        email: process.env.TEST_EMAIL,
+        password: process.env.TEST_PASSWORD,
+      },
+    }
+  );
+
+  expect(response.status()).toBe(200);
+
+  const body = await response.json();
+
+  expect(body.success).toBe(true);
+
+  const token =
+    body.token ||
+    body.data?.token ||
+    body.access_token ||
+    body.data?.access_token;
+
+  expect(token).toBeDefined();
+
+  return token;
+}
+
+
+test.describe.configure({ mode: 'serial' });
+
 test.describe('Profile API Tests', () => {
 
   test('GET profile - validate response', async ({ request }) => {
 
-    const response = await request.get('/APIDEV/profile', {
-      headers: {
-        Authorization: `Bearer ${process.env.API_TOKEN}`,
-      },
-    });
+    const token = await getAuthToken(request);
+
+    const response = await request.get(
+      `${API_BASE_URL}/APIDEV/profile`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     expect(response.status()).toBe(200);
 
@@ -28,11 +67,16 @@ test.describe('Profile API Tests', () => {
 
   test('GET profile - validate profile fields', async ({ request }) => {
 
-    const response = await request.get('/APIDEV/profile', {
-      headers: {
-        Authorization: `Bearer ${process.env.API_TOKEN}`,
-      },
-    });
+    const token = await getAuthToken(request);
+
+    const response = await request.get(
+      `${API_BASE_URL}/APIDEV/profile`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     expect(response.status()).toBe(200);
 
@@ -54,15 +98,18 @@ test.describe('Profile API Tests', () => {
 
   test('GET profile - handle invalid endpoint', async ({ request }) => {
 
-    const response = await request.get('/APIDEV/profile/invalid', {
-      headers: {
-        Authorization: `Bearer ${process.env.API_TOKEN}`,
-      },
-    });
+    const token = await getAuthToken(request);
 
-    expect(response.status()).not.toBe(200);
+    const response = await request.get(
+      `${API_BASE_URL}/APIDEV/profile/invalid`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    expect(response.status()).toBeGreaterThanOrEqual(400);
+    expect(response.status()).toBe(404);
   });
 
 });
